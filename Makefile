@@ -31,6 +31,9 @@ uninstall:
 run: river-shifttags
 	./river-shifttags
 
+debug: $(OBJ)
+	$(CC) $(LDFLAGS) -g $(OBJ) $(LIBS)
+
 clean:
 	$(RM) river-shifttags $(GEN) $(OBJ)
 
