@@ -146,7 +146,7 @@ snap_to_occupied(uint32_t new_tagmask,
                     goto ENDLOOP;
                 }
             }
-            for (uint32_t j = 1U << max_left; j < i; j >>= 1) {
+            for (uint32_t j = 1U << max_left; j >= i; j >>= 1) {
                 if (j & occupied_tags) {
                     final_tagmask |= j;
                     goto ENDLOOP;
