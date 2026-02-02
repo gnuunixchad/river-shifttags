@@ -124,13 +124,10 @@ snap_to_occupied(uint32_t new_tagmask,
          * Search for the closest occupied tag towards direction of shift
          */
         if (shifts > 0) {
-            for (uint32_t j = i;; j <<= 1) {
+            for (uint32_t j = i; j < 1U << max_left; j <<= 1) {
                 if (j & occupied_tags) {
                     final_tagmask |= j;
                     goto ENDLOOP;
-                }
-                if (j == 1U << max_left) {
-                    break;
                 }
             }
             for (uint32_t j = 1 << start_tag; j <= i; j <<= 1) {
@@ -146,7 +143,7 @@ snap_to_occupied(uint32_t new_tagmask,
                     goto ENDLOOP;
                 }
             }
-            for (uint32_t j = 1U << max_left; j < i; j >>= 1) {
+            for (uint32_t j = 1U << max_left; j >= i; j >>= 1) {
                 if (j & occupied_tags) {
                     final_tagmask |= j;
                     goto ENDLOOP;
