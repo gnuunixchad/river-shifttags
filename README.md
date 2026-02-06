@@ -1,4 +1,4 @@
-# fork of [river-shifttags](https://gitlab.com/akumar-xyz/river-shifttags)
+# <img src="./misc/river-shifttags-repo.png" width="24"/> fork of [river-shifttags](https://gitlab.com/akumar-xyz/river-shifttags)
 
 A small utility for the river-classic Wayland compositor to rotate the focused
 tags. Useful for focusing next/prev tag, or rotating the whole tagmask if
