@@ -33,15 +33,23 @@ Use the `--occupied` flag to skip unoccupied tags while shifting
 river-shifttags --shifts -1 --occupied
 ```
 
+Use the `--unoccupied` flag to skip occupied tags while shifting
+```sh
+river-shifttags --shifts -1 --unoccupied
+```
+
 ## Example configuration
 
 ```sh
-super="Mod4"
+map="riverctl map"
+mod=Mod4
 
-riverctl map normal $super BRACKETRIGHT spawn  'river-shifttags --occupied'
-riverctl map normal $super BRACKETLEFT spawn  'river-shifttags --shift -1 --occupied'
-riverctl map normal $super+Shift BRACKETRIGHT spawn  'river-shifttags'
-riverctl map normal $super+Shift BRACKETLEFT spawn  'river-shifttags --shift -1'
+$map normal $mod apostrophe                 spawn "river-shifttags --occupied"
+$map normal $mod semicolon                  spawn "river-shifttags --occupied --shift -1"
+$map normal ${mod}+Shift apostrophe         spawn "river-shifttags"
+$map normal ${mod}+Shift semicolon          spawn "river-shifttags --shift -1"
+$map normal ${mod}+Control apostrophe       spawn "river-shifttags --unoccupied"
+$map normal ${mod}+Control semicolon        spawn "river-shifttags --unoccupied --shift -1"
 ```
 
 # Contributing

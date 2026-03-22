@@ -26,6 +26,7 @@ int shifts = 1;
 int num_tags = 9;
 int start_tag = 0;
 bool occupied_only = false;
+bool unoccupied_only = false;
 
 /* Globals */
 uint32_t occupied_tags = 0;
@@ -58,6 +59,7 @@ const char usage[] =
   "   --start VALUE      First tag to rotate from. (starts with 0)\n"
   "                      (default: 0)\n"
   "   --occupied         Skip unoccupied tags.\n"
+  "   --unoccupied       Skip occupied tags.\n"
   "   --help             print this message and exit.\n"
   "\n"
   "\n";
@@ -152,6 +154,73 @@ snap_to_occupied(uint32_t new_tagmask,
         }
 
         final_tagmask |= i; /* no occupied tags found */
+    ENDLOOP:;
+    }
+
+    return (update_mask & final_tagmask) | (~update_mask & new_tagmask);
+}
+
+uint32_t
+snap_to_unoccupied(uint32_t new_tagmask,
+                   uint32_t occupied_tags,
+                   int start_tag,
+                   int num_tags,
+                   int shifts)
+{
+    const uint32_t update_mask = get_update_mask(start_tag, num_tags);
+    const uint32_t unoccupied_tags = ~occupied_tags & update_mask;
+    uint32_t final_tagmask = 0;
+
+    for (uint32_t i = 1U << start_tag;
+         i <= 1U << (start_tag + num_tags - 1) && i != 0;
+         i <<= 1) {
+
+        if (!(i & new_tagmask)) {
+            /* Not focused in new tagmask */
+            continue;
+        }
+
+        if (i & unoccupied_tags) {
+            /* tag is already unoccupied */
+            final_tagmask |= i;
+            continue;
+        }
+
+        const int max_left =
+          MIN(start_tag + num_tags, (int)sizeof(uint32_t) * CHAR_BIT - 1);
+
+        /*
+         * Search for the closest unoccupied tag towards direction of shift
+         */
+        if (shifts > 0) {
+            for (uint32_t j = i; j < 1U << max_left; j <<= 1) {
+                if (j & unoccupied_tags) {
+                    final_tagmask |= j;
+                    goto ENDLOOP;
+                }
+            }
+            for (uint32_t j = 1 << start_tag; j <= i; j <<= 1) {
+                if (j & unoccupied_tags) {
+                    final_tagmask |= j;
+                    goto ENDLOOP;
+                }
+            }
+        } else {
+            for (uint32_t j = i; j >= 1U << start_tag; j >>= 1) {
+                if (j & unoccupied_tags) {
+                    final_tagmask |= j;
+                    goto ENDLOOP;
+                }
+            }
+            for (uint32_t j = 1U << max_left; j >= i; j >>= 1) {
+                if (j & unoccupied_tags) {
+                    final_tagmask |= j;
+                    goto ENDLOOP;
+                }
+            }
+        }
+
+        final_tagmask |= i; /* no unoccupied tags found */
     ENDLOOP:;
     }
 
@@ -260,10 +329,11 @@ main(int argc, char* argv[])
     /*
      * Parse options and parameters
      */
-    enum { HELP, SHIFT_VALUE, START_TAG, NUM_TAGS, OCCUPIED };
+    enum { HELP, SHIFT_VALUE, START_TAG, NUM_TAGS, OCCUPIED, UNOCCUPIED };
     static struct option opts[] = {
         { "help", no_argument, NULL, HELP },
         { "occupied", no_argument, NULL, OCCUPIED },
+        { "unoccupied", no_argument, NULL, UNOCCUPIED },
         { "shifts", required_argument, NULL, SHIFT_VALUE },
         { "num-tags", required_argument, NULL, NUM_TAGS },
         { "start", required_argument, NULL, START_TAG },
@@ -288,9 +358,17 @@ main(int argc, char* argv[])
         case OCCUPIED:
             occupied_only = true;
             break;
+        case UNOCCUPIED:
+            unoccupied_only = true;
+            break;
         default:
             return EXIT_FAILURE;
         }
+    }
+
+    if (occupied_only && unoccupied_only) {
+        fputs("ERROR: --occupied and --unoccupied are mutually exclusive\n", stderr);
+        return EXIT_FAILURE;
     }
 
     /*
@@ -339,6 +417,13 @@ main(int argc, char* argv[])
         occupied_tags /* if no tags are occupied, do nothing */) {
         new_tagmask = snap_to_occupied(
           new_tagmask, occupied_tags, start_tag, num_tags, shifts);
+    } else if (unoccupied_only) {
+        const uint32_t update_mask = get_update_mask(start_tag, num_tags);
+        const uint32_t unoccupied_tags = ~occupied_tags & update_mask;
+        if (unoccupied_tags) {
+            new_tagmask = snap_to_unoccupied(
+              new_tagmask, occupied_tags, start_tag, num_tags, shifts);
+        }
     }
     set_tagmask(river_controller, new_tagmask);
 
