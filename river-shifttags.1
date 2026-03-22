@@ -1,4 +1,4 @@
-.TH river-shifttags 1 2021-10-24 "General Commands Manual"
+.TH river-shifttags 1 2026-03-22 "General Commands Manual"
 .
 .SH NAME
 .P
@@ -42,6 +42,18 @@ left.
 .RE
 .
 .P
+\fB--occupied\fR
+.RS
+Skip unoccupied tags while shifting.
+.RE
+.
+.P
+\fB--unoccupied\fR
+.RS
+Skip occupied tags while shifting.
+.RE
+.
+.P
 \fB--num-tags\fR \fIvalue\fR
 .RS
 Amount of used tags.
@@ -61,15 +73,34 @@ This configures the first tag in the output to rotate from.
 (Default is 0).
 .SH EXAMPLE
 .P
-For mapping Super + '[' and ']' keys to cycle to left and right tags:
+For mapping Super + ''' and ';' keys to cycle to left and right tags:
 .P
 .RS
 .EX
-riverctl map normal Mod4 BRACKETRIGHT spawn  'river-shifttags'
-riverctl map normal Mod4 BRACKETLEFT spawn  'river-shifttags --shifts -1'
+riverctl map normal Mod4 apostrophe spawn 'river-shifttags'
+riverctl map normal Mod4 semicolon spawn  'river-shifttags --shifts -1'
 .EE
 .RE
 .
+.P
+For mapping Super + Shift + ''' and ';' keys to cycle to left and right unoccupied tags:
+.P
+.RS
+.EX
+riverctl map normal Mod4+Shift apostrophe spawn 'river-shifttags --occupied'
+riverctl map normal Mod4+Shift semicolon spawn  'river-shifttags --occupied --shifts -1'
+.EE
+.RE
+.
+.P
+For mapping Super + Control + ''' and ';' keys to cycle to left and right occupied tags:
+.P
+.RS
+.EX
+riverctl map normal Mod4+Control apostrophe spawn 'river-shifttags --unoccupied'
+riverctl map normal Mod4+Control semicolon spawn  'river-shifttags --unoccupied --shifts -1'
+.EE
+.RE
 .
 .SH SEE ALSO
 .BR river (1)
